@@ -1,0 +1,22 @@
+gcc -O2 -DUSE_CRYPT -c zlib/adler32.c
+gcc -O2 -DUSE_CRYPT -c zlib/compress.c
+gcc -O2 -DUSE_CRYPT -c zlib/crc32.c
+gcc -O2 -DUSE_CRYPT -c zlib/deflate.c
+gcc -O2 -DUSE_CRYPT -c zlib/gzclose.c
+gcc -O2 -DUSE_CRYPT -c zlib/gzlib.c
+gcc -O2 -DUSE_CRYPT -c zlib/gzread.c
+gcc -O2 -DUSE_CRYPT -c zlib/gzwrite.c
+gcc -O2 -DUSE_CRYPT -c zlib/infback.c
+gcc -O2 -DUSE_CRYPT -c zlib/inffast.c
+gcc -O2 -DUSE_CRYPT -c zlib/inflate.c
+gcc -O2 -DUSE_CRYPT -c zlib/inftrees.c
+gcc -O2 -DUSE_CRYPT -c zlib/trees.c
+gcc -O2 -DUSE_CRYPT -c zlib/uncompr.c
+gcc -O2 -DUSE_CRYPT -c zlib/zutil.c
+
+gcc -O2 -DUSE_CRYPT -c -I zlib zlib/minizip/ioapi.c
+gcc -O2 -DUSE_CRYPT -c -I zlib zlib/minizip/unzip.c
+
+ar rcs zlib.a adler32.o compress.o crc32.o deflate.o gzclose.o gzlib.o gzread.o gzwrite.o infback.o inffast.o inflate.o inftrees.o trees.o uncompr.o zutil.o unzip.o ioapi.o
+
+gcc  -O2 -DUSE_CRYPT -I "zlib" -I "zlib/minizip" -DUSE_CRYPT test.c  zlib.a  -o checked_solution 
