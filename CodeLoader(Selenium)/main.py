@@ -13,28 +13,17 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
 
-import os
-import requests
-import shutil
-
-
 def download_and_move_file(url, destination_dir):
-    # Определение имени файла на основе URL
-    filename = url.split('/')[-1]
-    # Получение содержимого файла по URL
+    print(f"Load url: {url}")
     response = requests.get(url, stream=True)
-    # Проверка успешности загрузки файла
     if response.status_code == 200:
-        # Путь к файлу для сохранения
-        file_path = os.path.join(destination_dir, filename)
-        # Запись содержимого файла
+        file_path = os.path.join(destination_dir, 'Task.pdf')
         with open(file_path, 'wb') as f:
             response.raw.decode_content = True
             shutil.copyfileobj(response.raw, f)
-        print(f"Файл успешно загружен и перемещен в {file_path}")
+        print(f"File successfuly loaded into {file_path}")
     else:
-        print("Ошибка при загрузке файла")
-
+        print("Loading error")
 
 
 def get_selectors(driver, selectors):
@@ -96,7 +85,8 @@ def login(driver):
         submit_button.click()
 
 
-def iterate_and_click_links(driver, filter, handler):
+def iterate_and_click_links(driver, filter, handler, click=False, attribute='href'):
+    index = 0
     body = get_selectors(driver, ['body'])[0]
     print(f"iterate_pack body {body}")
     links = body.find_elements(By.TAG_NAME, 'a')
@@ -105,32 +95,74 @@ def iterate_and_click_links(driver, filter, handler):
         if not link:
             print(f"Empty link {link}")
             continue
-        if not link.get_attribute('href'):
+        if not link.get_attribute(attribute):
             print(f"No href {link.get_attribute('href')}")
             continue
-        if filter in link.get_attribute('href'):
-            link.click()
+        print(f"Link href is {link}")
+        if filter in link.get_attribute(attribute):
+            print(f"Found link: {link}")
+            if click:
+                link.click()
+                print(f"Clicked on link: {link}")
             handler(driver)
+            return 
 
 
-def get_task_pdf():
-    url = 
-    destination_dir = os.path.dirname(os.path.abspath(__file__))
-    download_and_move_file(url, destination_dir)
+# def get_task_pdf():
+#     url =
+#     destination_dir = os.path.dirname(os.path.abspath(__file__))
+#     download_and_move_file(url, destination_dir)
+
+
+def get_pack_data(driver):
+    time.sleep(5)
+    executable_path = os.path.abspath(__file__)
+    executable_directory = os.path.dirname(executable_path)
+
+    body = get_selectors(driver, ['body'])[0]
+    print(f"iterate_pack body {body}")
+    links = body.find_elements(By.TAG_NAME, 'a')
+    print(f"iterate_pack links {links}")
+
+    url = ''
+    name = ''
+
+    for link in links:
+        if link and link.get_attribute('href'):
+            print(f"HREF: {link.get_attribute('href')}")
+            if 'tour_statement' in link.get_attribute('href'):
+                url = link.get_attribute('href')
+            elif 'nsuts-new/tours' in link.get_attribute('href'):
+                name = link.text
+                return_elem = link
+        else:
+            print(f"Link {link} is fake")
+
+    if 'Туры > ' in name:
+        name = name.replace('Туры > ', '')
+    pack_dir = os.path.join(executable_directory, name)
+    print(f"URL: {url}")
+    print(f"Dir: {pack_dir}")
+    if not os.path.exists(pack_dir):
+        os.makedirs(pack_dir)
+
+    download_and_move_file(url, pack_dir)
+    return_elem.click()
+    time.sleep(1)
+
 
 
 def iterate_packs(driver):
-    iterate_and_click_links(driver, 'tour_to_select', iterate_packs)
+    iterate_and_click_links(driver, 'tour_to_select', get_pack_data, click=True)
 
 
 def select_olympiad(driver):
-    iterate_and_click_links(driver, '194', iterate_packs)
-
-
+    iterate_and_click_links(driver, '194', iterate_packs, click=True, attribute='id')
 
 
 def download_file(href):
     pass
+
 
 driver = get_driver()
 login(driver)
